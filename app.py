@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify, send_file
-from PIL import Image, ImageDraw
+import base64
 import io
+
+from flask import Flask, jsonify, request, send_file
 from inference_sdk import InferenceHTTPClient
+from PIL import Image, ImageDraw
 
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
