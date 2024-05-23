@@ -8,6 +8,11 @@ def home():
     return "Hello World!"
 
 
+@app.route("/test")
+def test():
+    return "Test API!"
+
+
 @app.route('/calculate', methods=['POST'])
 def calculate():
     data = request.get_json()
