@@ -20,32 +20,6 @@ model = project.version(1).model
 def home():
     return "Hello World!"
 
-
-def plot_image(image, result):
-    draw = ImageDraw.Draw(image)
-    for bounding_box in result['predictions']:
-        x1 = bounding_box['x'] - bounding_box['width'] / 2
-        x2 = bounding_box['x'] + bounding_box['width'] / 2
-        y1 = bounding_box['y'] - bounding_box['height'] / 2
-        y2 = bounding_box['y'] + bounding_box['height'] / 2
-        box = (x1, y1, x2, y2)
-        draw.rectangle(box, outline="red", width=5)
-    return image
-
-
-def image_to_base64(image):
-    img_io = io.BytesIO()
-    image.save(img_io, format='JPEG')
-    img_io.seek(0)
-    img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
-    return img_base64
-
-
-def file_to_base64(file):
-    image = Image.open(file)
-    return image_to_base64(image)
-
-
 @app.route('/calculate/larvae', methods=['POST'])
 def calculate_larvae():
     if 'image' not in request.files or 'predictions' not in request.form:
@@ -56,16 +30,23 @@ def calculate_larvae():
 
     try:
         image = Image.open(image_file)
-    except Exception :
+    except Exception:
         return jsonify({"error": "Invalid image format"}), 400
 
-    annotated_image = plot_image(image, predictions)
+    draw = ImageDraw.Draw(image)
+    for bounding_box in predictions['predictions']:
+        x1 = bounding_box['x'] - bounding_box['width'] / 2
+        x2 = bounding_box['x'] + bounding_box['width'] / 2
+        y1 = bounding_box['y'] - bounding_box['height'] / 2
+        y2 = bounding_box['y'] + bounding_box['height'] / 2
+        box = (x1, y1, x2, y2)
+        draw.rectangle(box, outline="red", width=5)
+
     img_io = io.BytesIO()
-    annotated_image.save(img_io, 'JPEG')
+    image.save(img_io, 'JPEG')
     img_io.seek(0)
 
     return send_file(img_io, mimetype='image/jpeg')
-    
 
 
 @app.route('/calculate', methods=['POST'])
@@ -86,7 +67,7 @@ def calculate():
     except ValueError:
         return jsonify({"error": "'a' and 'b' must be numbers"}), 400
 
-    result = a + b 
+    result = a + b
 
     return jsonify({"result": result})
 
