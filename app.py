@@ -1,6 +1,12 @@
 from flask import Flask, request, jsonify, send_file
 from PIL import Image, ImageDraw
 import io
+from inference_sdk import InferenceHTTPClient
+
+CLIENT = InferenceHTTPClient(
+    api_url="https://detect.roboflow.com",
+    api_key="sP59RbvvS6X3MWqmP5Sq"
+)
 
 app = Flask(__name__)
 
@@ -10,32 +16,48 @@ def home():
     return "Hello World!"
 
 
-@app.route("/test")
-def test():
-    return "Test API!"
+def plot_image(image, result):
+    draw = ImageDraw.Draw(image)
+    for bounding_box in result['predictions']:
+        x1 = bounding_box['x'] - bounding_box['width'] / 2
+        x2 = bounding_box['x'] + bounding_box['width'] / 2
+        y1 = bounding_box['y'] - bounding_box['height'] / 2
+        y2 = bounding_box['y'] + bounding_box['height'] / 2
+        box = (x1, y1, x2, y2)
+        draw.rectangle(box, outline="red", width=5)
+    return image
+
+
+def image_to_base64(image):
+    img_io = io.BytesIO()
+    image.save(img_io, 'JPEG')
+    img_io.seek(0)
+    img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+    return img_base64
+
 
 @app.route('/calculate/larvae', methods=['POST'])
 def calculate_larvae():
     if 'image' not in request.files:
-        return "No image provided", 400
+        return jsonify({"error": "No image provided"}), 400
 
-    image_file = request.files['image']
+    inputImage = request.files['image']
+    result = CLIENT.infer(inputImage, model_id="desap/1")
+
     try:
-        image = Image.open(image_file)
+        requestImage = Image.open(inputImage)
     except IOError:
-        return "Invalid image", 400
+        return jsonify({"error": "Invalid image"}), 400
 
-    # Annotate the image (for testing, we'll draw a static red rectangle)
-    draw = ImageDraw.Draw(image)
-    draw.rectangle(((50, 50), (200, 200)), outline="red", width=5)
+    annotated_image = plot_image(requestImage, result)
+    annotated_image_base64 = image_to_base64(annotated_image)
 
-    # Save the image to a BytesIO object
-    img_io = io.BytesIO()
-    image.save(img_io, 'JPEG')
-    img_io.seek(0)
+    response = {
+        "result": result,
+        "annotated_image": annotated_image_base64
+    }
 
-    return send_file(img_io, mimetype='image/jpeg')
-    
+    return jsonify(response)
 
 
 @app.route('/calculate', methods=['POST'])
