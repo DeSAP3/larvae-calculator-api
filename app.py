@@ -1,20 +1,8 @@
-import base64
 import io
-import logging
-from io import BytesIO
-import numpy as np
-
 from flask import Flask, json, jsonify, request, send_file
-from inference_sdk import InferenceHTTPClient
 from PIL import Image, ImageDraw
-from roboflow import Roboflow
 
 app = Flask(__name__)
-
-rf = Roboflow(api_key="sP59RbvvS6X3MWqmP5Sq")
-project = rf.workspace().project("desap")
-model = project.version(1).model
-
 
 @app.route("/")
 def home():
