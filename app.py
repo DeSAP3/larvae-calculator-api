@@ -1,21 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from PIL import Image, ImageDraw
-
-# Opening the image to be used
-img = Image.open('img_path.png')
-
-# Creating a Draw object
-draw = ImageDraw.Draw(img)
-
-# Drawing a green rectangle
-# in the middle of the image
-draw.rectangle(xy=(50, 50, 150, 150),
-               fill=(0, 127, 0),
-               outline=(255, 255, 255),
-               width=5)
-
-# Method to display the modified image
-img.show()
+import io
 
 app = Flask(__name__)
 
@@ -29,15 +14,27 @@ def home():
 def test():
     return "Test API!"
 
-@app.route('/calculate/larvae')
-def calculate_larvae(image):
-    img = Image.open(image)
-    draw = ImageDraw.Draw(img)
-    draw.rectangle(xy=(50, 50, 150, 150),
-                   fill=(0, 127, 0),
-                   outline=(255, 255, 255),
-                   width=5)
-    img.show()
+@app.route('/calculate/larvae', methods=['POST'])
+def calculate_larvae():
+    if 'image' not in request.files:
+        return "No image provided", 400
+
+    image_file = request.files['image']
+    try:
+        image = Image.open(image_file)
+    except IOError:
+        return "Invalid image", 400
+
+    # Annotate the image (for testing, we'll draw a static red rectangle)
+    draw = ImageDraw.Draw(image)
+    draw.rectangle(((50, 50), (200, 200)), outline="red", width=5)
+
+    # Save the image to a BytesIO object
+    img_io = io.BytesIO()
+    image.save(img_io, 'JPEG')
+    img_io.seek(0)
+
+    return send_file(img_io, mimetype='image/jpeg')
     
 
 
