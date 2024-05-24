@@ -5,9 +5,12 @@ from PIL import Image, ImageDraw
 
 app = Flask(__name__)
 CORS(app)
+
+
 @app.route("/")
 def home():
     return "Hello World!"
+
 
 @app.route('/calculate/larvae', methods=['POST'])
 def calculate_larvae():
@@ -24,12 +27,13 @@ def calculate_larvae():
 
     draw = ImageDraw.Draw(image)
     for bounding_box in predictions['predictions']:
-        x1 = bounding_box['x'] - bounding_box['width'] / 2
-        x2 = bounding_box['x'] + bounding_box['width'] / 2
-        y1 = bounding_box['y'] - bounding_box['height'] / 2
-        y2 = bounding_box['y'] + bounding_box['height'] / 2
-        box = (x1, y1, x2, y2)
-        draw.rectangle(box, outline="red", width=5)
+        if predictions['class'] == 'larvae':
+            x1 = bounding_box['x'] - bounding_box['width'] / 2
+            x2 = bounding_box['x'] + bounding_box['width'] / 2
+            y1 = bounding_box['y'] - bounding_box['height'] / 2
+            y2 = bounding_box['y'] + bounding_box['height'] / 2
+            box = (x1, y1, x2, y2)
+            draw.rectangle(box, outline="red", width=5)
 
     img_io = io.BytesIO()
     image.save(img_io, 'JPEG')
