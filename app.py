@@ -27,7 +27,7 @@ def calculate_larvae():
 
     draw = ImageDraw.Draw(image)
     for bounding_box in predictions['predictions']:
-        if predictions['class'] == 'larvae':
+        if bounding_box['class'] == 'larvae':
             x1 = bounding_box['x'] - bounding_box['width'] / 2
             x2 = bounding_box['x'] + bounding_box['width'] / 2
             y1 = bounding_box['y'] - bounding_box['height'] / 2
