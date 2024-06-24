@@ -2,6 +2,7 @@ import base64
 import io
 import math
 from datetime import datetime
+import base64
 
 import cv2
 import numpy as np
@@ -79,6 +80,7 @@ def analyzedImage():
     imageType = request.form.get("imageType")
     src = request.files.get("src")
     src = cv2.imdecode(np.fromstring(src.read(), np.uint8), cv2.IMREAD_COLOR)
+    
     # Load Image
     logger.info(f'Analysing time: {datetime.now()}')
     logger.info("Loading image")
@@ -93,7 +95,26 @@ def analyzedImage():
     logger.success("Loaded image successfully")
 
     # Instantiate Constant Matrix
+    threshValue = 0
+    minEggRadius = 0
+    maxEggRadius = 0
+    maxEggCluster = 0
     logger.info("Instantiating constant matrix")
+    if imageType == 0:
+        threshValue = 116
+        minEggRadius = 1
+        maxEggRadius = 8
+        maxEggCluster = 8
+    elif imageType == 1:
+        threshValue = 120
+        minEggRadius = 5
+        maxEggRadius = 13
+        maxEggCluster = 30
+    else:
+        threshValue = 120
+        minEggRadius = 4
+        maxEggRadius = 14
+        maxEggCluster = 20
     threshValue, minEggRadius, maxEggRadius, maxEggCluster = instantiateConstMatrix(
         imageType)
     if threshValue == 0 or minEggRadius == 0 or maxEggRadius == 0 or maxEggCluster == 0:
@@ -216,11 +237,37 @@ def analyzedImage():
     logger.info(f"Egg Estimate: {eggEstimate}")
     logger.success("Metrics calculated successfully")
 
+    retval_threshold, buffer_threshold = cv2.imencode('.jpg', threshold)
+    if retval_threshold:
+        threshold_base64 = base64.b64encode(buffer_threshold).decode('utf-8')
+    else:
+        logger.error("Could not encode threshold image to buffer")
+        
+    retval_objects, buffer_objects = cv2.imencode('.jpg', objects)
+    if retval_objects:
+        objects_base64 = base64.b64encode(
+            buffer_objects).decode('utf-8')
+    else:
+        logger.error("Could not encode obejcts image to buffer")
+        
+    retval_outlines, buffer_outlines = cv2.imencode('.jpg', outlines)
+    if retval_outlines:
+        outlines_base64 = base64.b64encode(buffer_outlines).decode('utf-8')
+    else:
+        logger.error("Could not encode outlines image to buffer")
+        
+    retval_overlay, buffer_overlay = cv2.imencode('.jpg', overlay)
+    if retval_overlay:
+        overlay_base64 = base64.b64encode(buffer_overlay).decode('utf-8')
+    else:
+        logger.error("Could not encode overlay image to buffer")
+
+    
     # return singlesAvg, singlesCalculated, avgClusterArea, avgEggsPerCluster, totalEggs, eggEstimate, threshold, objects, outlines, overlay
-    threshold_base64 = encode_image_to_base64(threshold)
-    objects_base64 = encode_image_to_base64(objects)
-    outlines_base64 = encode_image_to_base64(outlines)
-    overlay_base64 = encode_image_to_base64(overlay)
+    # threshold_base64 = encode_image_to_base64(threshold)
+    # objects_base64 = encode_image_to_base64(objects)
+    # outlines_base64 = encode_image_to_base64(outlines)
+    # overlay_base64 = encode_image_to_base64(overlay)
     
     return jsonify(result={
         "singlesAvg": singlesAvg,
