@@ -80,7 +80,6 @@ def calculate():
 #     src = cv2.imdecode(np.fromstring(src.read(), np.uint8), cv2.IMREAD_COLOR)
     
 #     # Load Image
-#     logger.info(f'Analysing time: {datetime.now()}')
 #     logger.info("Loading image")
 #     if src is None:
 #         logger.info("No image selected")
