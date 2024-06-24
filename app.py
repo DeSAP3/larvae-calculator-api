@@ -11,7 +11,6 @@ from flask_cors import CORS
 from loguru import logger
 from PIL import Image, ImageDraw
 
-from util import instantiateConstMatrix, encode_image_to_base64, test
 
 app = Flask(__name__)
 CORS(app)
@@ -19,7 +18,6 @@ CORS(app)
 
 @app.route("/")
 def home():
-    test()
     return "DESAP@2022 API"
 
 
@@ -115,8 +113,6 @@ def analyzedImage():
         minEggRadius = 4
         maxEggRadius = 14
         maxEggCluster = 20
-    threshValue, minEggRadius, maxEggRadius, maxEggCluster = instantiateConstMatrix(
-        imageType)
     if threshValue == 0 or minEggRadius == 0 or maxEggRadius == 0 or maxEggCluster == 0:
         logger.error(
             f"Invalid constant matrix: {threshValue}, {minEggRadius}, {maxEggRadius}, {maxEggCluster}", style="braces")
