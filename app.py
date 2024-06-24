@@ -117,7 +117,7 @@ def analyzedImage():
         logger.error(
             f"Invalid constant matrix: {threshValue}, {minEggRadius}, {maxEggRadius}, {maxEggCluster}", style="braces")
         logger.error("Exiting program")
-        return
+        return jsonify({"error": "Error"}), 400
     logger.success("Instantiated constant matrix successfully")
 
     # Preprocess Image
@@ -139,7 +139,7 @@ def analyzedImage():
     if gray is None or threshold is None or dilate is None:
         logger.error("Failed to preprocess image")
         logger.error("Exiting program")
-        return
+        return jsonify({"error": "Error"}), 400
     logger.success("Preprocessed image successfully")
 
     # Analyze Image
@@ -238,6 +238,7 @@ def analyzedImage():
         threshold_base64 = base64.b64encode(buffer_threshold).decode('utf-8')
     else:
         logger.error("Could not encode threshold image to buffer")
+        return jsonify({"error": "Error"}), 400
         
     retval_objects, buffer_objects = cv2.imencode('.jpg', objects)
     if retval_objects:
@@ -245,18 +246,21 @@ def analyzedImage():
             buffer_objects).decode('utf-8')
     else:
         logger.error("Could not encode obejcts image to buffer")
+        return jsonify({"error": "Error"}), 400
         
     retval_outlines, buffer_outlines = cv2.imencode('.jpg', outlines)
     if retval_outlines:
         outlines_base64 = base64.b64encode(buffer_outlines).decode('utf-8')
     else:
         logger.error("Could not encode outlines image to buffer")
+        return jsonify({"error": "Error"}), 400
         
     retval_overlay, buffer_overlay = cv2.imencode('.jpg', overlay)
     if retval_overlay:
         overlay_base64 = base64.b64encode(buffer_overlay).decode('utf-8')
     else:
         logger.error("Could not encode overlay image to buffer")
+        return jsonify({"error": "Error"}), 400
 
     
     # return singlesAvg, singlesCalculated, avgClusterArea, avgEggsPerCluster, totalEggs, eggEstimate, threshold, objects, outlines, overlay
@@ -265,7 +269,7 @@ def analyzedImage():
     # outlines_base64 = encode_image_to_base64(outlines)
     # overlay_base64 = encode_image_to_base64(overlay)
     
-    return jsonify(result={
+    return jsonify({
         "singlesAvg": singlesAvg,
         "singlesCalculated": singlesCalculated,
         "avgClusterArea": avgClusterArea,
@@ -276,7 +280,7 @@ def analyzedImage():
         "objects": objects_base64,
         "outlines": outlines_base64,
         "overlay": overlay_base64
-    }, status=200)
+    }), 200
 
 
 if __name__ == "__main__":
