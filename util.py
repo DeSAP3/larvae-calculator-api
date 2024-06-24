@@ -1,6 +1,11 @@
 import base64
+
 import cv2
-import numpy as np
+import numpy
+
+
+def test():
+    return "Utility functions"
 
 
 def encode_image_to_base64(image_array):
@@ -10,6 +15,7 @@ def encode_image_to_base64(image_array):
         return base64_str
     else:
         raise ValueError("Could not encode image to buffer")
+
 
 def instantiateConstMatrix(imageType):
     if imageType == 0:

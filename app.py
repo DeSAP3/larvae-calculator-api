@@ -10,7 +10,7 @@ from flask_cors import CORS
 from loguru import logger
 from PIL import Image, ImageDraw
 
-from util import instantiateConstMatrix, encode_image_to_base64
+from util import instantiateConstMatrix, encode_image_to_base64, test
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +18,8 @@ CORS(app)
 
 @app.route("/")
 def home():
-    return "Hello World!"
+    test()
+    return "DESAP@2022 API"
 
 
 @app.route('/calculate/larvae', methods=['POST'])
@@ -233,6 +234,7 @@ def analyzedImage():
         "outlines": outlines_base64,
         "overlay": overlay_base64
     }, status=200)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
