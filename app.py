@@ -272,6 +272,10 @@ def analyzedImage():
         "avgEggsPerCluster": avgEggsPerCluster,
         "eggEstimate": eggEstimate,
         "totalEggs": totalEggs,
+        "threshold": threshold_base64,
+        "objects": objects_base64,
+        "outlines": outlines_base64,
+        "overlay": overlay_base64
         
     }), 200
 
