@@ -272,6 +272,7 @@ def analyzedImage():
         "avgEggsPerCluster": avgEggsPerCluster,
         "eggEstimate": eggEstimate,
         "totalEggs": totalEggs,
+        
     }), 200
 
 
