@@ -77,7 +77,7 @@ def analyzedImage():
     src = request.files.get("src")
     src = cv2.imdecode(np.fromstring(src.read(), np.uint8),
                        flags=cv2.IMREAD_UNCHANGED)
-    logger.info(src[0])
+    logger.info(len(src))
     # Load Image
     logger.info("Loading image")
     if src is None:
