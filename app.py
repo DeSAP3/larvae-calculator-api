@@ -71,13 +71,14 @@ def calculate():
 
     return jsonify({"result": result})
 
+
 @app.route("/calculate-eggs", methods=["POST"])
 def analyzedImage():
     imageType = request.form.get("imageType")
-    src = request.files.get("src")
-    src = cv2.imdecode(np.fromstring(src.read(), np.uint8),
+    imageType = int(imageType)
+    image = request.files.get("src")
+    src = cv2.imdecode(np.fromstring(image.read(), np.uint8),
                        flags=cv2.IMREAD_UNCHANGED)
-    logger.info(len(src))
     # Load Image
     logger.info("Loading image")
     if src is None:
@@ -86,7 +87,6 @@ def analyzedImage():
         return
     overlay = src.copy()
     logger.info(f'Image shape: {src.shape}')
-    logger.info(f'Image size: {src.size}')
     logger.info(f'Image dtype: {src.dtype}')
     logger.success("Loaded image successfully")
 
@@ -116,7 +116,8 @@ def analyzedImage():
             f"Invalid constant matrix: {threshValue}, {minEggRadius}, {maxEggRadius}, {maxEggCluster}", style="braces")
         logger.error("Exiting program")
         return jsonify({"error": "Error"}), 400
-    logger.success("Instantiated constant matrix successfully")
+    logger.success("Instantiated constant matrix successfully: threshValue={}, minEggRadius={}, maxEggRadius={}, maxEggCluster={}".format(
+        threshValue, minEggRadius, maxEggRadius, maxEggCluster))
 
     # Preprocess Image
     logger.info("Preprocessing image")
@@ -211,14 +212,18 @@ def analyzedImage():
 
     # Calculate Metrics
     logger.info("Calculating metrics")
+
     singlesTotalArea = sum(singlesArray)
+
     singlesAvg = round(singlesTotalArea / len(singlesArray),
                        2) if singlesArray else 0
+
     clustersTotalArea = sum(clustersArray) if clustersCount else 0
+
     singlesCalculated = round(
         clustersTotalArea / singlesAvg) if singlesAvg else 0
-    avgClusterArea = round(clustersTotalArea /
-                           clustersCount, 2) if clustersCount else 0
+    avgClusterArea = round(clustersTotalArea / clustersCount,
+                           2) if clustersCount else 0
     avgEggsPerCluster = round(
         avgClusterArea / singlesAvg, 1) if singlesAvg else 0
     totalEggs = singlesCount + singlesCalculated
@@ -237,7 +242,7 @@ def analyzedImage():
     else:
         logger.error("Could not encode threshold image to buffer")
         return jsonify({"error": "Error"}), 400
-        
+
     retval_objects, buffer_objects = cv2.imencode('.jpg', objects)
     if retval_objects:
         objects_base64 = base64.b64encode(
@@ -245,14 +250,14 @@ def analyzedImage():
     else:
         logger.error("Could not encode obejcts image to buffer")
         return jsonify({"error": "Error"}), 400
-        
+
     retval_outlines, buffer_outlines = cv2.imencode('.jpg', outlines)
     if retval_outlines:
         outlines_base64 = base64.b64encode(buffer_outlines).decode('utf-8')
     else:
         logger.error("Could not encode outlines image to buffer")
         return jsonify({"error": "Error"}), 400
-        
+
     retval_overlay, buffer_overlay = cv2.imencode('.jpg', overlay)
     if retval_overlay:
         overlay_base64 = base64.b64encode(buffer_overlay).decode('utf-8')
@@ -260,24 +265,13 @@ def analyzedImage():
         logger.error("Could not encode overlay image to buffer")
         return jsonify({"error": "Error"}), 400
 
-    
-    # return singlesAvg, singlesCalculated, avgClusterArea, avgEggsPerCluster, totalEggs, eggEstimate, threshold, objects, outlines, overlay
-    # threshold_base64 = encode_image_to_base64(threshold)
-    # objects_base64 = encode_image_to_base64(objects)
-    # outlines_base64 = encode_image_to_base64(outlines)
-    # overlay_base64 = encode_image_to_base64(overlay)
-    
     return jsonify({
         "singlesAvg": singlesAvg,
         "singlesCalculated": singlesCalculated,
         "avgClusterArea": avgClusterArea,
         "avgEggsPerCluster": avgEggsPerCluster,
-        "totalEggs": totalEggs,
         "eggEstimate": eggEstimate,
-        "threshold": threshold_base64,
-        "objects": objects_base64,
-        "outlines": outlines_base64,
-        "overlay": overlay_base64
+        "totalEggs": totalEggs,
     }), 200
 
 
