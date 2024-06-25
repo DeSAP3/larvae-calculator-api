@@ -75,8 +75,9 @@ def calculate():
 def analyzedImage():
     imageType = request.form.get("imageType")
     src = request.files.get("src")
-    src = cv2.imdecode(np.fromstring(src.read(), np.uint8), cv2.IMREAD_COLOR)
-    
+    src = cv2.imdecode(np.fromstring(src.read(), np.uint8),
+                       flags=cv2.IMREAD_UNCHANGED)
+    logger.info(src[0])
     # Load Image
     logger.info("Loading image")
     if src is None:
