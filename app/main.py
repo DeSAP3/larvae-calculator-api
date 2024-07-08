@@ -1,27 +1,23 @@
 import base64
+from flask import Blueprint, json, request, jsonify, send_file
+import base64
 import io
 import math
 from datetime import datetime
-
 import cv2
 import numpy as np
-from flask import Flask, json, jsonify, request, send_file
-from flask_cors import CORS
-from loguru import logger
 from PIL import Image, ImageDraw
-from werkzeug.middleware.proxy_fix import ProxyFix
+from loguru import logger
 
-app = Flask(__name__)
-CORS(app)
-app.wsgi_app = ProxyFix(app.wsgi_app)
+main = Blueprint('main', __name__)
 
 
-@app.route("/")
+@main.route("/")
 def home():
     return "DESAP@2022 API"
 
 
-@app.route('/calculate/larvae', methods=['POST'])
+@main.route('/calculate/larvae', methods=['POST'])
 def calculate_larvae():
     if 'image' not in request.files or 'predictions' not in request.form:
         return jsonify({"error": "No image or predictions part in the request"}), 400
@@ -51,7 +47,7 @@ def calculate_larvae():
     return send_file(img_io, mimetype='image/jpeg')
 
 
-@app.route('/calculate', methods=['POST'])
+@main.route('/calculate', methods=['POST'])
 def calculate():
     data = request.get_json()
     if not data:
@@ -74,7 +70,7 @@ def calculate():
     return jsonify({"result": result})
 
 
-@app.route("/calculate-eggs", methods=["POST"])
+@main.route("/calculate-eggs", methods=["POST"])
 def analyzedImage():
     imageType = request.form.get("imageType")
     imageType = int(imageType)
@@ -136,7 +132,7 @@ def analyzedImage():
     contoursObject = []
     contoursValues = []
     contours, hierarchy = cv2.findContours(
-        dilate, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        dilate, cv2.RETR_TREE, cv2.CHAIN_mainROX_SIMPLE)
     if gray is None or threshold is None or dilate is None:
         logger.error("Failed to preprocess image")
         logger.error("Exiting program")
@@ -163,7 +159,7 @@ def analyzedImage():
 
     for i in range(1, len(contours)):
         countour = cv2.contourArea(contours[i])
-        contoursObject.append(countour)
+        contoursObject.mainend(countour)
         contoursValues = contoursObject
         countourMax = max(contoursValues)
         if countourMax == countour:
@@ -184,7 +180,7 @@ def analyzedImage():
 
             boundingBoxes = src[rect[1]:rect[1] +
                                 rect[3], rect[0]:rect[0] + rect[2]]
-            detectedObjectsArray.append(boundingBoxes)
+            detectedObjectsArray.mainend(boundingBoxes)
 
             if countour <= minEggArea:
                 cv2.drawContours(outlines, contours, i,
@@ -196,14 +192,14 @@ def analyzedImage():
                                  1, cv2.LINE_8, hierarchy, 0)
                 cv2.drawContours(overlay, contours, i, blue,
                                  1, cv2.LINE_8, hierarchy, 0)
-                singlesArray.append(i)
+                singlesArray.mainend(i)
                 singlesCount += 1
             elif countour > maxEggArea and countour <= maxClusterArea:
                 cv2.drawContours(outlines, contours, i, red, -
                                  1, cv2.LINE_8, hierarchy, 0)
                 cv2.drawContours(overlay, contours, i, red,
                                  1, cv2.LINE_8, hierarchy, 0)
-                clustersArray.append(i)
+                clustersArray.mainend(i)
                 clustersCount += 1
             elif countour > maxClusterArea:
                 cv2.drawContours(outlines, contours, i,
@@ -278,9 +274,9 @@ def analyzedImage():
         "objects": objects_base64,
         "outlines": outlines_base64,
         "overlay": overlay_base64
-        
+
     }), 200
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    main.run(debug=True)
