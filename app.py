@@ -9,9 +9,11 @@ from flask import Flask, json, jsonify, request, send_file
 from flask_cors import CORS
 from loguru import logger
 from PIL import Image, ImageDraw
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 CORS(app)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 @app.route("/")
