@@ -1,5 +1,6 @@
 import base64
-from flask import Blueprint, json, request, jsonify, send_file
+from flask import Flask, Blueprint, json, request, jsonify, send_file
+from flask_cors import CORS
 import base64
 import io
 import math
@@ -7,15 +8,12 @@ from datetime import datetime
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
-<<<<<<< HEAD:app/main.py
 from loguru import logger
 
 main = Blueprint('main', __name__)
-=======
 
 app = Flask(__name__)
 CORS(app)
->>>>>>> parent of effe3bc (Refactor image manipulation code to include ProxyFix middleware for handling reverse proxy headers):app.py
 
 
 @main.route("/")
